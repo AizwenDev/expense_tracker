@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Expense Graph - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="icon-bar-chart-3"></i> Spending Overview</h1>
+    <p class="page-subtitle">{{ date_range }}</p>
+</div>
+
+<!-- Week Total Summary -->
+<div class="summary-grid">
+    <div class="summary-card primary">
+        <div class="summary-card-icon"><i class="icon-trending-up"></i></div>
+        <div class="summary-card-value">₱{{ week_total|floatformat:2|default:"0.00" }}</div>
+        <div class="summary-card-label">Total This Week</div>
+    </div>
+</div>
+
+<!-- Chart -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="icon-bar-chart-3"></i> Daily Expenses - Last 7 Days</h2>
+    </div>
+    <div class="chart-container">
+        {% if chart_url %}
+            <img src="{{ chart_url }}?t={{ request.GET.t|default:'1' }}" alt="Daily Expenses Chart" style="max-width: 100%; height: auto;">
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="icon-bar-chart-3"></i></div>
+                <h3 class="empty-state-title">No chart available</h3>
+                <p>Add some expenses to see the chart</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Category Breakdown -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="icon-folder"></i> Category Breakdown</h2>
+    </div>
+    
+    {% if category_data %}
+        <div class="category-grid">
+            {% for cat in category_data %}
+            <div class="category-card">
+                <div class="category-card-emoji">{% if cat.name == 'Food' %}<i class="icon-utensils"></i>{% elif cat.name == 'Transport' %}<i class="icon-car"></i>{% elif cat.name == 'Bills' %}<i class="icon-lightbulb"></i>{% else %}<i class="icon-package"></i>{% endif %}</div>
+                <div class="category-card-name">{{ cat.name }}</div>
+                <div class="category-card-amount">₱{{ cat.total|floatformat:2 }}</div>
+                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem;">
+                    {{ cat.count }} expense{{ cat.count|pluralize }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="icon-inbox"></i></div>
+            <h3 class="empty-state-title">No expenses this week</h3>
+            <p>Add some expenses to see the breakdown</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- How to Read the Chart -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="icon-lightbulb"></i> How to Read This Chart</h2>
+    </div>
+    <ul class="steps-list">
+        <li class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Bar Height = Daily Spending</h4>
+                <p>Each bar represents how much you spent on that day. Taller bars mean more spending.</p>
+            </div>
+        </li>
+        <li class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>X-Axis = Days</h4>
+                <p>The horizontal axis shows the last 7 days, from oldest (left) to most recent (right).</p>
+            </div>
+        </li>
+        <li class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4>Y-Axis = Amount in Pesos</h4>
+                <p>The vertical axis shows the amount in Philippine Pesos (₱).</p>
+            </div>
+        </li>
+        <li class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h4>Category Cards = Spending by Type</h4>
+                <p>The cards below show how much you spent in each category during this period.</p>
+            </div>
+        </li>
+    </ul>
+</div>
+
+<!-- Actions -->
+<div class="card">
+    <div class="flex gap-2" style="flex-wrap: wrap;">
+        <a href="{% url 'expense_graph' %}?t={{ request.GET.t|default:'1'|add:'1' }}" class="btn btn-secondary"><i class="icon-refresh-cw"></i> Refresh Chart</a>
+        <a href="{% url 'expense_prediction' %}" class="btn btn-primary"><i class="icon-sparkles"></i> View AI Prediction</a>
+        <a href="{% url 'expense_list' %}" class="btn btn-secondary"><i class="icon-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

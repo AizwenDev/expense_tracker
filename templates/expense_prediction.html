@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Prediction - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="icon-sparkles"></i> AI Spending Prediction</h1>
+    <p class="page-subtitle">Machine Learning powered spending forecast</p>
+</div>
+
+<!-- Prediction Result -->
+{% if success and prediction %}
+<div class="prediction-box">
+    <div class="prediction-label">Tomorrow's Predicted Spending</div>
+    <div class="prediction-value">₱{{ prediction|floatformat:2 }}</div>
+    <div class="prediction-note">
+        <i class="icon-bar-chart-3"></i> Based on {{ data_points }} days of expense data
+        {% if trend %}
+            | Trend: {{ trend|title }}
+            {% if daily_change %}
+                ({{ daily_change|floatformat:2 }}/day)
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="card" style="background: var(--warning-light); border-color: #FDE68A;">
+    <div class="text-center" style="padding: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;"><i class="icon-alert-triangle"></i></div>
+        <h3 style="color: #92400E; margin-bottom: 0.5rem;">Cannot Make Prediction</h3>
+        <p style="color: #92400E;">{{ error|default:"Not enough data to make a prediction. Add more expenses first." }}</p>
+        {% if expense_count < 2 %}
+        <div class="mt-2">
+            <a href="{% url 'populate_sample' %}" class="btn btn-success"><i class="icon-download"></i> Load Sample Data</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Stats Cards -->
+<div class="summary-grid">
+    <div class="summary-card primary">
+        <div class="summary-card-icon"><i class="icon-clipboard-list"></i></div>
+        <div class="summary-card-value">{{ expense_count }}</div>
+        <div class="summary-card-label">Total Expenses</div>
+    </div>
+    
+    <div class="summary-card success">
+        <div class="summary-card-icon"><i class="icon-calendar"></i></div>
+        <div class="summary-card-value">{{ data_points|default:"0" }}</div>
+        <div class="summary-card-label">Days of Data</div>
+    </div>
+    
+    <div class="summary-card warning">
+        <div class="summary-card-icon"><i class="icon-trending-up"></i></div>
+        <div class="summary-card-value">
+            {% if r2_score %}
+                {{ r2_score|floatformat:2 }}
+            {% else %}
+                --
+            {% endif %}
+        </div>
+        <div class="summary-card-label">Model Accuracy (R²)</div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="icon-brain"></i> {{ explanation.title }}</h2>
+    </div>
+    <ul class="steps-list">
+        {% for step in explanation.steps %}
+        <li class="step-item">
+            <div class="step-number">{{ step.step }}</div>
+            <div class="step-content">
+                <h4>{{ step.title }}</h4>
+                <p>{{ step.description }}</p>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="alert alert-warning" style="margin-top: 1.5rem;">
+        <span><i class="icon-lightbulb"></i></span>
+        <span>{{ explanation.note }}</span>
+    </div>
+</div>
+
+<!-- Technical Details -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="icon-settings"></i> Technical Details</h2>
+    </div>
+    <div style="display: grid; gap: 1rem;">
+        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--background); border-radius: var(--radius-sm);">
+            <span style="color: var(--text-muted);">Algorithm</span>
+            <span style="font-weight: 600;">Linear Regression</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--background); border-radius: var(--radius-sm);">
+            <span style="color: var(--text-muted);">Library</span>
+            <span style="font-weight: 600;">Scikit-learn</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--background); border-radius: var(--radius-sm);">
+            <span style="color: var(--text-muted);">Model Storage</span>
+            <span style="font-weight: 600;">Joblib (.joblib file)</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--background); border-radius: var(--radius-sm);">
+            <span style="color: var(--text-muted);">Data Range</span>
+            <span style="font-weight: 600;">{{ date_range }}</span>
+        </div>
+        {% if model_info.trained %}
+        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--background); border-radius: var(--radius-sm);">
+            <span style="color: var(--text-muted);">Model Coefficient</span>
+            <span style="font-weight: 600;">{{ model_info.coefficient }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--background); border-radius: var(--radius-sm);">
+            <span style="color: var(--text-muted);">Model Intercept</span>
+            <span style="font-weight: 600;">{{ model_info.intercept }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- What is Linear Regression? -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="icon-book-open"></i> What is Linear Regression?</h2>
+    </div>
+    <div style="color: var(--text-muted); line-height: 1.8;">
+        <p><strong>Linear Regression</strong> is one of the simplest machine learning algorithms. Think of it like this:</p>
+        <br>
+        <p>Imagine plotting your daily spending on a graph:</p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+            <li>Each day is a point on the X-axis (horizontal)</li>
+            <li>The amount spent is on the Y-axis (vertical)</li>
+            <li>You get a scatter of dots showing your spending pattern</li>
+        </ul>
+        <p>Linear Regression draws the <strong>"best fit line"</strong> through these dots. This line:</p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+            <li>Shows the general trend (going up or down)</li>
+            <li>Can be extended to predict future values</li>
+            <li>Is calculated using a mathematical formula that minimizes errors</li>
+        </ul>
+        <p>The formula is: <code style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px;">y = mx + b</code></p>
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+            <li><strong>y</strong> = predicted spending</li>
+            <li><strong>m</strong> = slope (how much spending changes per day)</li>
+            <li><strong>x</strong> = day number</li>
+            <li><strong>b</strong> = starting point (intercept)</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="card">
+    <div class="flex gap-2" style="flex-wrap: wrap;">
+        <a href="{% url 'expense_prediction' %}?retrain=1" class="btn btn-primary"><i class="icon-refresh-cw"></i> Retrain Model</a>
+        <a href="{% url 'expense_graph' %}" class="btn btn-secondary"><i class="icon-bar-chart-3"></i> View Graph</a>
+        <a href="{% url 'expense_list' %}" class="btn btn-secondary"><i class="icon-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

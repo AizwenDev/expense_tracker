@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Clear Data - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="icon-alert-triangle"></i> Clear All Data</h1>
+    <p class="page-subtitle">This action cannot be undone</p>
+</div>
+
+<div class="card" style="max-width: 500px;">
+    <div class="text-center" style="padding: 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;"><i class="icon-trash-2"></i></div>
+        <h3 style="margin-bottom: 1rem;">Are you sure?</h3>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">
+            This will permanently delete all expenses and reset the ML model.
+            This action cannot be undone.
+        </p>
+        
+        <form method="post" action="{% url 'clear_data' %}">
+            {% csrf_token %}
+            <div class="flex gap-2" style="justify-content: center;">
+                <button type="submit" class="btn btn-danger">
+                    <i class="icon-trash-2"></i> Yes, Delete Everything
+                </button>
+                <a href="{% url 'expense_list' %}" class="btn btn-secondary">
+                    <i class="icon-arrow-left"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

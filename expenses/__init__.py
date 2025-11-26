@@ -1,0 +1,1 @@
+# Expenses App - Main application for tracking expenses

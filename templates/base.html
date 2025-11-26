@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/lucide-static@latest/font/lucide.css">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Expense Tracker{% endblock %}</title>
+    <style>
+        /* ============================================
+           EXPENSE TRACKER - MODERN UI STYLES
+           ============================================ */
+        
+        /* CSS Variables for consistent theming */
+        :root {
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --primary-light: #818CF8;
+            --secondary: #8B5CF6;
+            --success: #10B981;
+            --success-light: #D1FAE5;
+            --danger: #EF4444;
+            --danger-light: #FEE2E2;
+            --warning: #F59E0B;
+            --warning-light: #FEF3C7;
+            --background: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+        
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .navbar-brand:hover {
+            opacity: 0.9;
+        }
+        
+        /* Hamburger Menu - Hidden checkbox */
+        .menu-toggle {
+            display: none;
+        }
+        
+        /* Hamburger Button */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            transition: background 0.2s ease;
+        }
+        
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .hamburger-line {
+            width: 24px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            margin: 2px 0;
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            z-index: 999;
+            transition: left 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .sidebar-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .sidebar-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-left-color: white;
+        }
+        
+        .sidebar-link i {
+            font-size: 1.25rem;
+        }
+        
+        /* Desktop Navigation */
+        .navbar-nav {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+            
+            .navbar-nav {
+                display: none;
+            }
+            
+            .sidebar,
+            .sidebar-overlay {
+                display: block;
+            }
+            
+            /* When checkbox is checked */
+            .menu-toggle:checked ~ .sidebar-overlay {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            
+            .menu-toggle:checked ~ .sidebar {
+                left: 0;
+            }
+            
+            /* Hamburger animation when open */
+            .menu-toggle:checked ~ .navbar .hamburger .hamburger-line:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+            
+            .menu-toggle:checked ~ .navbar .hamburger .hamburger-line:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .menu-toggle:checked ~ .navbar .hamburger .hamburger-line:nth-child(3) {
+                transform: rotate(-45deg) translate(5px, -5px);
+            }
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        /* Summary Cards Grid */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .summary-card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+        
+        .summary-card-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .summary-card.primary {
+            border-left: 4px solid var(--primary);
+        }
+        
+        .summary-card.success {
+            border-left: 4px solid var(--success);
+        }
+        
+        .summary-card.warning {
+            border-left: 4px solid var(--warning);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--background);
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        tr:hover {
+            background: var(--background);
+        }
+        
+        .amount {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--background);
+            color: var(--text);
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: var(--card);
+        }
+        
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .form-help {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* Alerts/Messages */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .alert-success {
+            background: var(--success-light);
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+        
+        .alert-error {
+            background: var(--danger-light);
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        
+        .alert-warning {
+            background: var(--warning-light);
+            color: #92400E;
+            border: 1px solid #FDE68A;
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .chart-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-sm);
+        }
+        
+        /* Category Cards */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .category-card {
+            background: var(--background);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .category-card-emoji {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-card-name {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+        
+        .category-card-amount {
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        /* Prediction Box */
+        .prediction-box {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .prediction-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+        
+        .prediction-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .prediction-note {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        /* Steps List */
+        .steps-list {
+            list-style: none;
+        }
+        
+        .step-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .step-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .step-content p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        
+        /* Responsive Content */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .summary-card-value {
+                font-size: 1.5rem;
+            }
+            
+            .prediction-value {
+                font-size: 2rem;
+            }
+            
+            th, td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+            }
+            
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+        }
+        
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .flex { display: flex; }
+        .flex-between { justify-content: space-between; }
+        .flex-center { align-items: center; }
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+    </style>
+</head>
+<body>
+    <!-- Hidden checkbox for menu toggle (CSS-only, no JS) -->
+    <input type="checkbox" id="menu-toggle" class="menu-toggle">
+    
+    <!-- Sidebar Overlay (closes menu when clicked) -->
+    <label for="menu-toggle" class="sidebar-overlay"></label>
+    
+    <!-- Mobile Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="{% url 'expense_list' %}" class="sidebar-brand">
+                <i class="icon-wallet"></i> Expense Tracker
+            </a>
+            <label for="menu-toggle" class="sidebar-close">
+                <i class="icon-x"></i>
+            </label>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'expense_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'expense_list' %}active{% endif %}">
+                <i class="icon-list"></i> Expenses
+            </a>
+            <a href="{% url 'expense_add' %}" class="sidebar-link {% if request.resolver_match.url_name == 'expense_add' %}active{% endif %}">
+                <i class="icon-plus-circle"></i> Add New
+            </a>
+            <a href="{% url 'expense_graph' %}" class="sidebar-link {% if request.resolver_match.url_name == 'expense_graph' %}active{% endif %}">
+                <i class="icon-chart-line"></i> Graph
+            </a>
+            <a href="{% url 'expense_prediction' %}" class="sidebar-link {% if request.resolver_match.url_name == 'expense_prediction' %}active{% endif %}">
+                <i class="icon-sparkles"></i> Predict
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="{% url 'expense_list' %}" class="navbar-brand">
+                <i class="icon-wallet"></i> O.py Expense Tracker
+            </a>
+            
+            <!-- Hamburger Menu Button (mobile only) -->
+            <label for="menu-toggle" class="hamburger">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </label>
+            
+            <!-- Desktop Navigation -->
+            <div class="navbar-nav">
+                <a href="{% url 'expense_list' %}" class="nav-link {% if request.resolver_match.url_name == 'expense_list' %}active{% endif %}">
+                    <i class="icon-list"></i> Expenses
+                </a>
+                <a href="{% url 'expense_add' %}" class="nav-link {% if request.resolver_match.url_name == 'expense_add' %}active{% endif %}">
+                    <i class="icon-plus-circle"></i> Add New
+                </a>
+                <a href="{% url 'expense_graph' %}" class="nav-link {% if request.resolver_match.url_name == 'expense_graph' %}active{% endif %}">
+                    <i class="icon-chart-line"></i> Graph
+                </a>
+                <a href="{% url 'expense_prediction' %}" class="nav-link {% if request.resolver_match.url_name == 'expense_prediction' %}active{% endif %}">
+                    <i class="icon-sparkles"></i> Predict
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Messages/Alerts -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'success' }}">
+                    {% if message.tags == 'success' %}
+                        <i class="icon-check-circle"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="icon-x-circle"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="icon-alert-triangle"></i>
+                    {% else %}
+                        <i class="icon-info"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><i class="icon-wallet"></i> Expense Tracker with AI Prediction | Built with Django + Matplotlib + Scikit-learn</p>
+        <p class="mt-1">Portable System - Runs from USB Flash Drive</p>
+    </footer>
+
+</body>
+</html>

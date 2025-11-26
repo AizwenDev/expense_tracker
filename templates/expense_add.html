@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Expense - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="icon-plus-circle"></i> Add New Expense</h1>
+    <p class="page-subtitle">Record a new expense to track your spending</p>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <form method="post" action="{% url 'expense_add' %}">
+        {% csrf_token %}
+        
+        <!-- Amount Field -->
+        <div class="form-group">
+            <label for="id_amount" class="form-label"><i class="icon-banknote"></i> Amount (₱)</label>
+            <input type="number" 
+                   name="amount" 
+                   id="id_amount"
+                   class="form-input"
+                   placeholder="0.00"
+                   step="0.01"
+                   min="0.01"
+                   required
+                   value="{{ form.amount.value|default:'' }}">
+            {% if form.amount.errors %}
+                <p class="form-help" style="color: var(--danger);">{{ form.amount.errors.0 }}</p>
+            {% else %}
+                <p class="form-help">Enter the amount you spent</p>
+            {% endif %}
+        </div>
+        
+        <!-- Category Field -->
+        <div class="form-group">
+            <label for="id_category" class="form-label"><i class="icon-folder"></i> Category</label>
+            <select name="category" id="id_category" class="form-select" required>
+                <option value="">-- Select Category --</option>
+                <option value="food" {% if form.category.value == 'food' %}selected{% endif %}>Food</option>
+                <option value="transport" {% if form.category.value == 'transport' %}selected{% endif %}>Transport</option>
+                <option value="bills" {% if form.category.value == 'bills' %}selected{% endif %}>Bills</option>
+                <option value="other" {% if form.category.value == 'other' %}selected{% endif %}>Other</option>
+            </select>
+            {% if form.category.errors %}
+                <p class="form-help" style="color: var(--danger);">{{ form.category.errors.0 }}</p>
+            {% else %}
+                <p class="form-help">What type of expense is this?</p>
+            {% endif %}
+        </div>
+        
+        <!-- Date Field -->
+        <div class="form-group">
+            <label for="id_date" class="form-label"><i class="icon-calendar"></i> Date</label>
+            <input type="date" 
+                   name="date" 
+                   id="id_date"
+                   class="form-input"
+                   required
+                   value="{{ form.date.value|date:'Y-m-d'|default:'' }}">
+            {% if form.date.errors %}
+                <p class="form-help" style="color: var(--danger);">{{ form.date.errors.0 }}</p>
+            {% else %}
+                <p class="form-help">When did you make this expense?</p>
+            {% endif %}
+        </div>
+        
+        <!-- Description Field -->
+        <div class="form-group">
+            <label for="id_description" class="form-label"><i class="icon-file-text"></i> Description (Optional)</label>
+            <textarea name="description" 
+                      id="id_description"
+                      class="form-textarea"
+                      rows="3"
+                      placeholder="Add notes about this expense...">{{ form.description.value|default:'' }}</textarea>
+            {% if form.description.errors %}
+                <p class="form-help" style="color: var(--danger);">{{ form.description.errors.0 }}</p>
+            {% else %}
+                <p class="form-help">Any additional details you want to remember</p>
+            {% endif %}
+        </div>
+        
+        <!-- Submit Buttons -->
+        <div class="flex gap-2" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">
+                <i class="icon-save"></i> Save Expense
+            </button>
+            <a href="{% url 'expense_list' %}" class="btn btn-secondary">
+                <i class="icon-arrow-left"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Tips Card -->
+<div class="card" style="max-width: 600px; margin-top: 1.5rem;">
+    <div class="card-header">
+        <h2 class="card-title"><i class="icon-lightbulb"></i> Tips</h2>
+    </div>
+    <ul style="color: var(--text-muted); padding-left: 1.5rem;">
+        <li>Track expenses as soon as you make them for accuracy</li>
+        <li>Use categories to organize your spending</li>
+        <li>Add descriptions to remember what each expense was for</li>
+        <li>Check the AI prediction to see your spending trends</li>
+    </ul>
+</div>
+{% endblock %}

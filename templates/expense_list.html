@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="icon-layout-dashboard"></i> Dashboard</h1>
+    <p class="page-subtitle">Track and manage your expenses</p>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+    <div class="summary-card primary">
+        <div class="summary-card-icon"><i class="icon-coins"></i></div>
+        <div class="summary-card-value">₱{{ total_expenses|floatformat:2|default:"0.00" }}</div>
+        <div class="summary-card-label">Total Expenses</div>
+    </div>
+    
+    <div class="summary-card success">
+        <div class="summary-card-icon"><i class="icon-calendar"></i></div>
+        <div class="summary-card-value">₱{{ week_expenses|floatformat:2|default:"0.00" }}</div>
+        <div class="summary-card-label">This Week</div>
+    </div>
+    
+    <div class="summary-card warning">
+        <div class="summary-card-icon"><i class="icon-sparkles"></i></div>
+        <div class="summary-card-value">
+            {% if predicted_amount %}
+                ₱{{ predicted_amount|floatformat:2 }}
+            {% else %}
+                --
+            {% endif %}
+        </div>
+        <div class="summary-card-label">Predicted Tomorrow</div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Quick Actions</h2>
+    </div>
+    <div class="flex gap-2" style="flex-wrap: wrap;">
+        <a href="{% url 'expense_add' %}" class="btn btn-primary"><i class="icon-plus"></i> Add Expense</a>
+        <a href="{% url 'expense_graph' %}" class="btn btn-secondary"><i class="icon-bar-chart-3"></i> View Graph</a>
+        <a href="{% url 'expense_prediction' %}" class="btn btn-secondary"><i class="icon-sparkles"></i> AI Prediction</a>
+        {% if expense_count == 0 %}
+            <a href="{% url 'populate_sample' %}" class="btn btn-success"><i class="icon-download"></i> Load Sample Data</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Expense List -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Recent Expenses</h2>
+        <span style="color: var(--text-muted);">{{ expense_count }} total</span>
+    </div>
+    
+    {% if expenses %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>
+                            <span class="category-badge">
+                                {% if expense.category == 'food' %}<i class="icon-utensils"></i>{% elif expense.category == 'transport' %}<i class="icon-car"></i>{% elif expense.category == 'bills' %}<i class="icon-lightbulb"></i>{% else %}<i class="icon-package"></i>{% endif %} {{ expense.category_name }}
+                            </span>
+                        </td>
+                        <td class="amount">₱{{ expense.amount|floatformat:2 }}</td>
+                        <td>{{ expense.date|date:"M d, Y" }}</td>
+                        <td>{{ expense.description|default:"-"|truncatewords:5 }}</td>
+                        <td>
+                            <a href="{% url 'expense_delete' expense.pk %}"
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('Delete this expense?');">
+                                <i class="icon-trash-2"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="icon-inbox"></i></div>
+            <h3 class="empty-state-title">No expenses yet</h3>
+            <p>Start tracking your expenses by adding your first one!</p>
+            <div class="mt-2">
+                <a href="{% url 'expense_add' %}" class="btn btn-primary"><i class="icon-plus"></i> Add Your First Expense</a>
+            </div>
+            <div class="mt-2">
+                <p style="color: var(--text-muted); font-size: 0.875rem;">Or load sample data for demonstration:</p>
+                <a href="{% url 'populate_sample' %}" class="btn btn-secondary btn-sm mt-1"><i class="icon-download"></i> Load Sample Data</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Category Breakdown -->
+{% if category_totals %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Category Breakdown</h2>
+    </div>
+    <div class="category-grid">
+        {% for cat in category_totals %}
+        <div class="category-card">
+            <div class="category-card-emoji">
+                {% if cat.category == 'food' %}<i class="icon-utensils"></i>{% elif cat.category == 'transport' %}<i class="icon-car"></i>{% elif cat.category == 'bills' %}<i class="icon-lightbulb"></i>{% else %}<i class="icon-package"></i>{% endif %}
+            </div>
+            <div class="category-card-name">
+                {% if cat.category == 'food' %}Food{% elif cat.category == 'transport' %}Transport{% elif cat.category == 'bills' %}Bills{% else %}Other{% endif %}
+            </div>
+            <div class="category-card-amount">₱{{ cat.total|floatformat:2 }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
